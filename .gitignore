@@ -5,3 +5,4 @@ output/*
 templates/*
 persons/*
 fonts/*
+config.json
