@@ -1,0 +1,7 @@
+*.swp
+*.un~
+cache/*
+output/*
+templates/*
+persons/*
+fonts/*

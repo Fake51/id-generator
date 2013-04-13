@@ -1,0 +1,60 @@
+body{background-color:white;margin:0;width:1024px;background-color:#222;margin-left:auto;margin-right:auto;}
+.title{font:65px/70px impact;margin:0;padding:0 10px;background-color:black;color:white;text-align:center;}
+
+button {
+    cursor: pointer;
+    cursor: hand;
+}
+
+table button, .nice{
+    width:50px;
+    height:50px;
+}
+
+button.next {
+    width:100%;height:30px;font-size:20px;margin:20px 0;
+}
+
+h1,p,form,td{
+    text-transform:uppercase;
+    padding:0;
+    margin:0;
+}
+table{width:100%;}
+input,textarea,select{border:1px solid grey;}
+input[type=text],textarea{width:400px;}
+.control{
+    font-family:arial;
+    background-color:black;
+    color:white;
+    padding:10px;
+}
+.control td{color:white;}
+.list{
+    padding:10px;
+    color:black;
+    background-color:darkgrey;
+}
+
+#workarea{
+    width:1024px;
+    height:639px;
+    position:relative;
+    top:0;
+    left:0;
+    overflow:hidden;
+}
+#photo, #template{
+    position:absolute;
+    left:0;
+    top:0;
+}
+
+.align-right {
+    text-align:right;
+}
+
+input.color-input {
+    width:40px;
+    text-align:right;
+}
