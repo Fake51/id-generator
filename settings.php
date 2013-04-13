@@ -29,9 +29,9 @@
  *
  * PHP version 5.3+
  *
- * @copyright Copyright (c) 2013 Peter Lind
- * @license   license link FreeBSD license
- * @link      link to source code
+ * @copyright Copyright (c) 2013 Peter Lind & Kristoffer Mads Sørensen
+ * @license   https://github.com/Fake51/id-generator/blob/master/LICENSE FreeBSD license
+ * @link      https://github.com/Fake51/id-generator
  * @version   0.1
  * @author    Peter Lind <peter.e.lind@gmail.com>
  */
