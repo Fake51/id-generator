@@ -36,8 +36,13 @@
  * @author    Peter Lind <peter.e.lind@gmail.com>
  */
 
-define('TEMPLATE_PATH', './templates/');
-define('CACHE_PATH', './cache/');
-define('OUTPUT_PATH', './output/');
-define('INPUT_PATH', './persons/');
-define('CONFIG_PATH', "./config.json");
+define('BASE_PATH', realpath(__DIR__ . '/../'));
+
+define('TEMPLATE_PATH', BASE_PATH . '/templates/');
+define('CACHE_PATH', BASE_PATH . '/cache/');
+define('OUTPUT_PATH', BASE_PATH . '/output/');
+define('INPUT_PATH', BASE_PATH . '/persons/');
+define('FONTS_PATH', BASE_PATH . '/fonts/');
+define('CONFIG_PATH', BASE_PATH . "/config.json");
+
+define('VIEWS_PATH', BASE_PATH . "/views/");

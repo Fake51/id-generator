@@ -36,13 +36,13 @@
  * @author    Peter Lind <peter.e.lind@gmail.com>
  */
 
-require 'defines.php';
-require 'functions.php';
-require 'person.php';
-require 'SimpleImage.php';
+require 'code/defines.php';
+require 'code/functions.php';
+require 'code/person.php';
+require 'code/SimpleImage.php';
 
 // get various needed values
 // handle post
 // show template
 
-require 'settings_template.php';
+require 'views/settings_template.php';

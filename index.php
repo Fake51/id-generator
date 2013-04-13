@@ -35,10 +35,10 @@
  * @version   0.1
  * @author    Peter Lind <peter.e.lind@gmail.com>
  */
-require 'defines.php';
-require 'functions.php';
-require 'person.php';
-require 'SimpleImage.php';
+require 'code/defines.php';
+require 'code/functions.php';
+require 'code/person.php';
+require 'code/SimpleImage.php';
 
 if (!checkSetup()) {
     doInstall();

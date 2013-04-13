@@ -59,8 +59,8 @@
         <input type='hidden' value='<?php echo $person->getY();?>' name='y' id='y'>
 
         <div id='workarea'>
-            <img id='photo' src='<?= get_cache_filename($person->getFilename());?>'>
-            <img id='template' src='<?=$preview_filename?>'>
+            <img id='photo' src='<?= systemToWebPath(get_cache_filename($person->getFilename()));?>'>
+            <img id='template' src='<?= systemToWebPath($preview_filename); ?>'>
         </div>
         <div class='control'>
             <h1>Filename: <?=$step?></h1>

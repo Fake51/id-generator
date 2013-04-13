@@ -306,7 +306,7 @@ function createPersonImage($person, $filename, $debug, $image_type = IMAGETYPE_P
 
     } else {
         $template = new SimpleImage();
-        $template->load("templates/" . $person->getTemplate() . ".png");
+        $template->load(TEMPLATE_PATH . $person->getTemplate() . ".png");
         $template->resizeToWidth(1024);
 
         save_file_cache('template_ ' . $person->getTemplate(), $template->image);
@@ -534,7 +534,7 @@ function showIDCardEditor(array $data_fields, array $defaults)
     clearCache();
     $preview_filename = createPreview($person);
 
-    include("editor_template.php");
+    include VIEWS_PATH . "editor_template.php";
     exit;
 }
 
@@ -594,13 +594,26 @@ function e($string)
 }
 
 /**
+ * converts a system to web path
+ * which mainly consists of stripping the base path
+ *
+ * @param string $path System path to convert
+ *
+ * @return string
+ */
+function systemToWebPath($path)
+{
+    return str_replace(BASE_PATH, '', $path);
+}
+
+/**
  * checks that all needed paths exist
  *
  * @return bool
  */
 function checkSetup()
 {
-    foreach (array(TEMPLATE_PATH, CACHE_PATH, OUTPUT_PATH, INPUT_PATH) as $path) {
+    foreach (array(TEMPLATE_PATH, CACHE_PATH, OUTPUT_PATH, INPUT_PATH, FONTS_PATH) as $path) {
         if (!is_dir($path) || !is_writable($path)) {
             return false;
         }
@@ -621,7 +634,7 @@ function checkSetup()
 function doInstall()
 {
     $failed = false;
-    foreach (array(TEMPLATE_PATH, CACHE_PATH, OUTPUT_PATH, INPUT_PATH) as $path) {
+    foreach (array(TEMPLATE_PATH, CACHE_PATH, OUTPUT_PATH, INPUT_PATH, FONTS_PATH) as $path) {
         if (!is_dir($path)) {
             if (!mkdir($path, 0770)) {
                 $failed = true;
