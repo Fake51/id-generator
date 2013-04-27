@@ -30,44 +30,65 @@
  * PHP version 5.3+
  *
  * @copyright Copyright (c) 2013 Peter Lind & Kristoffer Mads Sørensen
- * @license   https://github.com/Fake51/id-generator/blob/master/LICENSE FreeBSD license
- * @link      link to source code
- * @version   version number
+ * @license   https://github.com/Fake51/id-generator/blob/master/LICENSE link FreeBSD license
+ * @link      https://github.com/Fake51/id-generator
+ * @version   0.1
  * @author    Peter Lind <peter.e.lind@gmail.com>
  */
-?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>ID Generator - settings</title>
-    <link rel="stylesheet" href="style.css"/>
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-    <script src="functions.js"></script>
-</head>
-<body>
-    <h1 class='title'>ID Generator</h1>
-    <section class="templates">
-        <header>Templates</header>
-        <ul>
-            <?php foreach (getTemplateList() as $name => $filename) : ?>
-            <li><img alt="Remove template" src="images/erase.png" class="remove-template" data-filename="<?= e($filename);?>"/> <?= e($name);?></li>
-            <?php endforeach;?>
-        </ul>
-        <script type="text/template" id="template-list-item">
-            <li><img alt="Remove template" src="images/erase.png" class="remove-template" data-filename="!filename!"/> !name!</li>
-        </script>
-        <form action="ajax.php" method="POST" enctype="multipart/form-data">
-            <p>Templates should be dimensioned at <?= TEMPLATE_WIDTH;?>px by <?= TEMPLATE_HEIGHT;?>px or they will be scaled and resized to those dimensions.</p>
-            <span class="template-upload-wrapper">
-                <input type="hidden" name="action" value="upload-template"/>
-                <input type="file" name="template-file"/> <button class="upload-template">Upload new template</button>
-            </span>
-        </form>
-    </section>
+require 'code/defines.php';
+require 'code/functions.php';
+require 'code/person.php';
+require 'code/SimpleImage.php';
 
-    <script>
-        settings_init(jQuery);
-    </script>
-</body>
-</html>
+if (empty($_REQUEST['action'])) {
+    header('HTTP/1.1 400 No action specified');
+    exit;
+}
+
+switch (strtolower($_REQUEST['action'])) {
+case 'delete-template':
+    if (empty($_GET['filename'])) {
+        header('HTTP/1.1 400 Lacking filename');
+        break;
+    }
+
+    if (!removeTemplate($_GET['filename'])) {
+        header('HTTP/1.1 500 Failed to remove template');
+        break;
+    }
+
+    header('HTTP/1.1 200 Template removed');
+    break;
+
+case 'upload-template':
+    if (empty($_FILES['template-file'])) {
+        header('HTTP/1.1 400 No file uploaded');
+        break;
+    }
+
+    try {
+        $info = handleTemplateUpload($_FILES['template-file']);
+
+        if (!empty($_POST['ajax-call'])) {
+            header('HTTP/1.1 200 Success');
+            header('Content-Type: application/json; charset=UTF-8');
+            echo json_encode($info);
+
+        } else {
+            header('HTTP/1.1 303 Finished');
+            header('Location: ' . $_SERVER['HTTP_REFERER']);
+
+        }
+
+    } catch (Exception $e) {
+
+        header('HTTP/1.1 500 Template upload failed');
+        header('Content-Type: text/plain; charset=UTF-8');
+        echo $e->getMessage();
+    }
+
+    break;
+
+default:
+    header('HTTP/1.1 400 Action not recognized');
+}

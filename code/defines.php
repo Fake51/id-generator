@@ -46,3 +46,6 @@ define('FONTS_PATH', BASE_PATH . '/fonts/');
 define('CONFIG_PATH', BASE_PATH . "/config.json");
 
 define('VIEWS_PATH', BASE_PATH . "/views/");
+
+define('TEMPLATE_WIDTH', 1890);
+define('TEMPLATE_HEIGHT', 1180);

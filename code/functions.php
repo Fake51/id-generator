@@ -37,6 +37,78 @@
  */
 
 /**
+ * attempts to remove a template
+ *
+ * @param string $filename Filename of template to remove
+ *
+ * @return bool
+ */
+function removeTemplate($filename)
+{
+    return unlink(TEMPLATE_PATH . $filename);
+}
+
+/**
+ * handles template upload
+ *
+ * @param array $file_info FILES array from upload
+ *
+ * @return string
+ */
+function handleTemplateUpload(array $file_info)
+{
+    if (!empty($file_info['error'])) {
+        throw new Exception("Error in file upload");
+    }
+
+    if (!is_uploaded_file($file_info['tmp_name'])) {
+        throw new Exception("File did not get stored after upload");
+    }
+
+    if (!($image_info = getimagesize($file_info['tmp_name']))) {
+        throw new Exception("Uploaded file is not an image");
+    }
+
+    if (!(in_array($image_info['mime'], array('image/jpeg', 'image/png')))) {
+        throw new Exception('Only PNG and JPG images allowed as templates');
+    }
+
+    $extension = $image_info['mime'] == 'image/jpeg' ? 'jpg' : 'png';
+
+    if (preg_match('/^([a-z0-9_ -]+)\\.(png|jpg|jpeg)$/i', $file_info['name'], $match)) {
+        $template_filename = strtolower($match[1] . '.' . $extension);
+
+    } else {
+        $index = 1;
+
+        while (file_exists(TEMPLATE_PATH . 'template' . $index . '.' . $extension)) {
+            $index++;
+        }
+
+        $template_filename = 'template' . $index . '.' . $extension;
+    }
+
+    if ($image_info[0] != TEMPLATE_WIDTH || $image_info[0] != TEMPLATE_HEIGHT) {
+        $template_filename = str_replace('.' . $extension, '.png', $template_filename);
+
+        $image = new SimpleImage();
+        $image->load($file_info['tmp_name']);
+        $image->resize(TEMPLATE_WIDTH, TEMPLATE_HEIGHT);
+        $image->save(TEMPLATE_PATH . $template_filename, IMAGETYPE_PNG);
+
+    } else {
+        if (!move_uploaded_file($file_info['tmp_name'], TEMPLATE_PATH . $template_filename)) {
+            throw new Exception('Could not move uploaded file to proper place');
+        }
+    }
+
+    return array(
+        'filename' => $template_filename,
+        'template' => ucfirst(basename($template_filename, '.' . $extension)),
+    );
+}
+
+/**
  * returns list of templates for use
  *
  * @return array
@@ -47,8 +119,8 @@ function getTemplateList()
 
     if ($handle = opendir(TEMPLATE_PATH)) {
         while (false !== ($file = readdir($handle))) {
-            if (($file != "..") && ($file != ".") && (preg_match("@^(.*)\.(png|jpg)$@", $file, $match))) {
-                $templates[ucfirst($match[1])] = $match[1];
+            if (($file != "..") && ($file != ".") && (preg_match("@^((.*)\.(png|jpg))$@", $file, $match))) {
+                $templates[ucfirst($match[2])] = $match[1];
             }
         }
     }
@@ -108,7 +180,7 @@ function get_file_cache($image_name)
  */
 function get_cache_filename($image_name)
 {
-    return CACHE_PATH . "keep_" . md5($image_name) . ".png";
+    return CACHE_PATH . "keep_" . md5($image_name);
 }
 
 /**
@@ -306,7 +378,7 @@ function createPersonImage($person, $filename, $debug, $image_type = IMAGETYPE_P
 
     } else {
         $template = new SimpleImage();
-        $template->load(TEMPLATE_PATH . $person->getTemplate() . ".png");
+        $template->load(TEMPLATE_PATH . $person->getTemplate());
         $template->resizeToWidth(1024);
 
         save_file_cache('template_ ' . $person->getTemplate(), $template->image);
@@ -496,7 +568,7 @@ function showIDCardEditor(array $data_fields, array $defaults)
     $config  = loadConfig();
     $persons = loadPersons();
 
-    $step = $_GET['step'];
+    $step = !empty($_GET['step']) ? $_GET['step'] : 'first';
     if ($step == "first") {
         $step = $persons[0];
     }

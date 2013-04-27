@@ -39,6 +39,7 @@
 
 ?><html>
 <head>
+    <meta charset="UTF-8">
     <link rel="stylesheet" href="style.css"/>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
     <script>
@@ -51,7 +52,7 @@
     </script>
     <script src="functions.js"></script>
 </head>
-<body><h1 class='title'>MEGA SYMPOSIUM DELUXE GENERATOR</h1>
+<body><h1 class='title'>ID Generator</h1>
 
     <div class='main'>
         <form action='<?= $_SERVER['REQUEST_URI']?>' id='myform' method='post'>
@@ -63,7 +64,7 @@
             <img id='template' src='<?= systemToWebPath($preview_filename); ?>'>
         </div>
         <div class='control'>
-            <h1>Filename: <?=$step?></h1>
+            <h2>Filename: <?=$step?></h2>
             <table>
                 <tr>
                     <td>
@@ -121,7 +122,7 @@
     </div>
 
     <div class='list'>
-        <h1>Rediger gamle:</h1>
+        <h2>Rediger gamle:</h2>
         <ul>
         <?php
         foreach($config['persons'] as $person){
@@ -136,6 +137,10 @@
         <br><br>
         <div class="align-right"><button class="wipe-all">Clean alt - begynd forfra</button></div>
         <br><br>
+        <a href="settings.php" title="Edit settings">Settings</a>
     </div>
+    <script>
+    editor_init(jQuery);
+    </script>
 </body>
 </html>

@@ -58,3 +58,13 @@ input.color-input {
     width:40px;
     text-align:right;
 }
+
+/* settings stuff */
+section.templates {
+    background-color: #ddd;
+    padding: 5px 10px;
+}
+
+img.remove-template {
+    cursor: pointer;
+}

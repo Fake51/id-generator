@@ -32,7 +32,9 @@
  * @version   0.1
  * @author    Peter Lind <peter.e.lind@gmail.com>
  */
-(function(jQuery) {
+function editor_init(jQuery) {
+    "use strict";
+
     var $ = jQuery;
 
     function setX(num){
@@ -93,4 +95,69 @@
         $('button.next').click(next);
         $('button.wipe-all').click(ask);
     });
-})(jQuery);
+}
+
+function settings_init($) {
+    "use strict";
+
+    function removeTemplateHandler(e) {
+        var self = $(this);
+
+        if (confirm('Are you sure you want to delete this template? It cannot be undone')) {
+            $.ajax({
+                url: "ajax.php",
+                type: "GET",
+                data: {filename: self.data('filename'), action: 'delete-template', ajax: true},
+                success: function() {
+                    self.parent()
+                        .fadeOut(300, function() {
+                            self.remove();
+                        });
+                },
+                error: function() {
+                    alert('Could not delete template');
+                }
+            });
+        }
+    }
+
+    /**
+     * handles template upload event
+     *
+     * @param Event e Click event triggered
+     *
+     * @return void
+     */
+    function uploadTemplateHandler(e) {
+        var self          = $(this),
+            form          = self.closest('form'),
+            formdata      = new FormData(form[0]),
+            xhr           = new XMLHttpRequest(),
+            html_template = $('#template-list-item').text();
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        self.attr('disabled', true);
+
+        formdata.append('ajax-call', 'true');
+
+        xhr.open(form.attr('method'), form.attr('action'), true);
+        xhr.onload = function(e) {
+            var data = JSON.parse(xhr.responseText),
+                html = html_template.replace(/!filename!/, data.filename).replace(/!name!/, data.template);
+
+            $('section.templates ul').append(html);
+            form.find('input[name="template-file"]').val('');
+            self.attr('disabled', false);
+        };
+
+        xhr.send(formdata);
+    }
+
+    $('section.templates ul').on('click.remove-template', 'img.remove-template', removeTemplateHandler);
+
+    if (window.FormData) {
+        $('button.upload-template').click(uploadTemplateHandler);
+    }
+}

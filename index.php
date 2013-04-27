@@ -42,25 +42,29 @@ require 'code/SimpleImage.php';
 
 if (!checkSetup()) {
     doInstall();
+    header('HTTP/1.1 303 Install run');
     header("Location: index.php?view=card&step=first");
     exit(0);
 }
 
-if (!isset($_GET['view'])){
-    header("Location: index.php?view=card&step=first");
+if (!getTemplateList()) {
+    header('HTTP/1.1 303 Do settings');
+    header("Location: settings.php");
     exit(0);
 }
+
+$action = empty($_GET['view']) ? 'card' : $_GET['view'];
 
 if (!file_exists("config.json")) {
     saveEmptyConfig();
 }
 
-if ($_GET['view'] == "delete") {
+if ($action == "delete") {
     wipeContents();
 
-} elseif ($_GET['view'] == "zip") {
+} elseif ($action == "zip") {
     outputZipFile();
 
-} else if ($_GET['view'] == "card") {
+} else {
     showIDCardEditor(getDynamicFields(), getDefaultValues());
 }
