@@ -123,7 +123,7 @@
 
     <div class='list'>
         <h2>Rediger gamle:</h2>
-        <ul>
+        <ul class="uploaded-photos">
         <?php
         foreach($config['persons'] as $person){
             ?>
@@ -132,12 +132,21 @@
         }
         ?>
         </ul>
-        <br><br>
-        <a href='index.php?view=zip'>Download</a> alle dem jeg har lavet og som er færdige (det er dem på listen lige ovenfor).
-        <br><br>
+        <p>
+            <a href='index.php?view=zip'>Download</a> alle dem jeg har lavet og som er færdige (det er dem på listen lige ovenfor).
+        </p>
         <div class="align-right"><button class="wipe-all">Clean alt - begynd forfra</button></div>
-        <br><br>
-        <a href="settings.php" title="Edit settings">Settings</a>
+        <h2>Upload photo</h2>
+        <form action="ajax.php" method="POST" enctype="multipart/form-data">
+            <p>Photos should be dimensioned <?= PHOTO_WIDTH;?>px by <?= PHOTO_HEIGHT;?>px or they will be scaled and resized to those dimensions.</p>
+            <span class="template-upload-wrapper">
+                <input type="hidden" name="action" value="upload-photo"/>
+                <input type="file" name="photo"/> <button class="upload-photo">Upload new photo</button>
+            </span>
+        </form>
+        <p>
+            <a href="settings.php" title="Edit settings">Settings</a>
+        </p>
     </div>
     <script>
     editor_init(jQuery);

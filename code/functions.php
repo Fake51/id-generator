@@ -49,13 +49,14 @@ function removeTemplate($filename)
 }
 
 /**
- * handles template upload
+ * returns image info from a file upload
  *
- * @param array $file_info FILES array from upload
+ * @param array $file_info Info from uploaded file
  *
- * @return string
+ * @throws Exception
+ * @return array
  */
-function handleTemplateUpload(array $file_info)
+function getUploadedImageInfo(array $file_info)
 {
     if (!empty($file_info['error'])) {
         throw new Exception("Error in file upload");
@@ -73,23 +74,113 @@ function handleTemplateUpload(array $file_info)
         throw new Exception('Only PNG and JPG images allowed as templates');
     }
 
-    $extension = $image_info['mime'] == 'image/jpeg' ? 'jpg' : 'png';
+    $image_info['extension'] = $image_info['mime'] == 'image/jpeg' ? 'jpg' : 'png';
 
-    if (preg_match('/^([a-z0-9_ -]+)\\.(png|jpg|jpeg)$/i', $file_info['name'], $match)) {
-        $template_filename = strtolower($match[1] . '.' . $extension);
+    return $image_info;
+}
 
-    } else {
-        $index = 1;
+/**
+ * creates a filename for a template or photo upload
+ *
+ * @param string $filename      Original filename
+ * @param string $filename_base Template for generating new name
+ * @param string $path          Path to put file in after upload
+ * @param string $extension     File type extension
+ *
+ * @return string
+ */
+function createUploadFilename($filename, $filename_base, $path, $extension)
+{
+    if (preg_match('/^([a-z0-9_ -]+)\\.(png|jpg|jpeg)$/i', $filename, $match)) {
+        $filename = strtolower($match[1] . '.' . $extension);
 
-        while (file_exists(TEMPLATE_PATH . 'template' . $index . '.' . $extension)) {
-            $index++;
+        if (file_exists($path . $filename)) {
+            $filename = getUnusedFilename($match[1] . '-INDEX.' . $extension, 1, $path);
         }
 
-        $template_filename = 'template' . $index . '.' . $extension;
+    } else {
+        $filename = getUnusedFilename($filename_base . '-INDEX.' . $extension, 1, $path);
+
     }
 
+    return $filename;
+}
+
+/**
+ * handles photo upload
+ *
+ * @param array $file_info FILES array from upload
+ *
+ * @return string
+ */
+function handlePhotoUpload(array $file_info)
+{
+    $image_info = getUploadedImageInfo($file_info);
+
+    $photo_filename = createUploadFilename($file_info['name'], 'photo', INPUT_PATH, $image_info['extension']);
+
+    if ($image_info[0] != PHOTO_WIDTH || $image_info[0] != PHOTO_HEIGHT) {
+        $photo_filename = str_replace('.' . $image_info['extension'], '.jpg', $photo_filename);
+        if (file_exists(INPUT_PATH . $photo_filename)) {
+            $photo_filename = getUnusedFilename(str_replace('.jpg', '-INDEX.jpg', $photo_filename), 1, INPUT_PATH);
+        }
+        $image_info['extension'] = 'jpg';
+
+        $image = new SimpleImage();
+        $image->load($file_info['tmp_name']);
+        $image->resize(PHOTO_WIDTH, PHOTO_HEIGHT);
+        $image->save(INPUT_PATH . $photo_filename, IMAGETYPE_JPEG);
+
+    } else {
+        if (!move_uploaded_file($file_info['tmp_name'], INPUT_PATH . $photo_filename)) {
+            throw new Exception('Could not move uploaded file to proper place');
+        }
+    }
+
+    return array(
+        'filename' => $photo_filename,
+        'template' => ucfirst(basename($photo_filename, '.' . $image_info['extension'])),
+    );
+}
+
+/**
+ * returns a path that doesnt exist,
+ * based on the given template and path
+ *
+ * @param string $template Filename template
+ * @param int    $index    Filename index to append
+ * @param string $path     Path to look in
+ *
+ * @return string
+ */
+function getUnusedFilename($template, $index, $path) {
+    $filename = str_replace('-INDEX', '-' . $index, $template);
+    if (file_exists($path . $filename)) {
+        return getUnusedFilename($template, $index + 1, $path);
+    }
+
+    return $filename;
+};
+
+/**
+ * handles template upload
+ *
+ * @param array $file_info FILES array from upload
+ *
+ * @return string
+ */
+function handleTemplateUpload(array $file_info)
+{
+    $image_info = getUploadedImageInfo($file_info);
+
+    $template_filename = createUploadFilename($file_info['name'], 'template', TEMPLATE_PATH, $image_info['extension']);
+
     if ($image_info[0] != TEMPLATE_WIDTH || $image_info[0] != TEMPLATE_HEIGHT) {
-        $template_filename = str_replace('.' . $extension, '.png', $template_filename);
+        $template_filename = str_replace('.' . $image_info['extension'], '.png', $template_filename);
+        if (file_exists(TEMPLATE_PATH . $template_filename)) {
+            $template_filename = getUnusedFilename(str_replace('.png', '-INDEX.png', $template_filename), 1, TEMPLATE_PATH);
+        }
+        $image_info['extension'] = 'png';
 
         $image = new SimpleImage();
         $image->load($file_info['tmp_name']);
@@ -104,7 +195,7 @@ function handleTemplateUpload(array $file_info)
 
     return array(
         'filename' => $template_filename,
-        'template' => ucfirst(basename($template_filename, '.' . $extension)),
+        'template' => ucfirst(basename($template_filename, '.' . $image_info['extension'])),
     );
 }
 
@@ -180,7 +271,7 @@ function get_file_cache($image_name)
  */
 function get_cache_filename($image_name)
 {
-    return CACHE_PATH . "keep_" . md5($image_name);
+    return CACHE_PATH . "keep_" . md5($image_name) . preg_replace('/^.*(\\.(png|jpg|jpeg|gif))/', '$1', $image_name);
 }
 
 /**
@@ -648,8 +739,8 @@ function getDefaultValues()
         'x'                => -170,
         'y'                => 60,
         'template'         => $template,
-        'photo_max_width'  => 319,
-        'photo_max_height' => 382,
+        'photo_max_width'  => PHOTO_WIDTH,
+        'photo_max_height' => PHOTO_HEIGHT,
     );
 }
 

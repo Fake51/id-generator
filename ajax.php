@@ -89,6 +89,35 @@ case 'upload-template':
 
     break;
 
+case 'upload-photo':
+    if (empty($_FILES['photo'])) {
+        header('HTTP/1.1 400 No file uploaded');
+        break;
+    }
+
+    try {
+        $info = handlePhotoUpload($_FILES['photo']);
+
+        if (!empty($_POST['ajax-call'])) {
+            header('HTTP/1.1 200 Success');
+            header('Content-Type: application/json; charset=UTF-8');
+            echo json_encode($info);
+
+        } else {
+            header('HTTP/1.1 303 Finished');
+            header('Location: ' . $_SERVER['HTTP_REFERER']);
+
+        }
+
+    } catch (Exception $e) {
+
+        header('HTTP/1.1 500 Template upload failed');
+        header('Content-Type: text/plain; charset=UTF-8');
+        echo $e->getMessage();
+    }
+
+    break;
+
 default:
     header('HTTP/1.1 400 Action not recognized');
 }

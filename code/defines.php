@@ -49,3 +49,6 @@ define('VIEWS_PATH', BASE_PATH . "/views/");
 
 define('TEMPLATE_WIDTH', 1890);
 define('TEMPLATE_HEIGHT', 1180);
+
+define('PHOTO_WIDTH', 319);
+define('PHOTO_HEIGHT', 382);

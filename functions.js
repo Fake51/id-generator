@@ -73,6 +73,48 @@ function editor_init(jQuery) {
 
     }
 
+    /**
+     * handles template upload event
+     *
+     * @param Event e Click event triggered
+     *
+     * @return void
+     */
+    function uploadPhotoHandler(e) {
+        var self          = $(this),
+            form          = self.closest('form'),
+            formdata      = new FormData(form[0]),
+            xhr           = new XMLHttpRequest();
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        self.attr('disabled', true);
+
+        formdata.append('ajax-call', 'true');
+
+        xhr.open(form.attr('method'), form.attr('action'), true);
+        xhr.onreadystatechange = function(e) {
+            if (xhr.readyState == 4) {
+                form.find('input[name="photo"]').val('');
+                self.attr('disabled', false);
+
+                if (xhr.status != 200) {
+                    igu.messageBox({message: 'Failed to upload photo', type: 'error', timeout: 0});
+
+                } else {
+                    igu.messageBox({message: 'Photo uploaded', type: 'success'});
+                }
+            }
+        };
+
+        xhr.send(formdata);
+    }
+
+    if (window.FormData) {
+        $('button.upload-photo').click(uploadPhotoHandler);
+    }
+
     jQuery(function() {
         setPhotoPosition();
 
@@ -115,7 +157,7 @@ function settings_init($) {
                         });
                 },
                 error: function() {
-                    alert('Could not delete template');
+                    igu.messageBox({message: 'Could not delete template', type: 'error', timeout: 0});
                 }
             });
         }
@@ -135,6 +177,16 @@ function settings_init($) {
             xhr           = new XMLHttpRequest(),
             html_template = $('#template-list-item').text();
 
+        function appendNewTemplate() {
+            var data = JSON.parse(xhr.responseText),
+                html = html_template.replace(/!filename!/, data.filename).replace(/!name!/, data.template);
+
+            $('section.templates ul').append(html);
+            form.find('input[name="template-file"]').val('');
+            self.attr('disabled', false);
+            igu.messageBox({message: 'Template uploaded', type: 'success'});
+        }
+
         e.preventDefault();
         e.stopPropagation();
 
@@ -143,13 +195,16 @@ function settings_init($) {
         formdata.append('ajax-call', 'true');
 
         xhr.open(form.attr('method'), form.attr('action'), true);
-        xhr.onload = function(e) {
-            var data = JSON.parse(xhr.responseText),
-                html = html_template.replace(/!filename!/, data.filename).replace(/!name!/, data.template);
+        xhr.onreadystatechange = function(e) {
+            if (xhr.readyState == 4) {
+                if (xhr.status == 200) {
+                    appendNewTemplate();
 
-            $('section.templates ul').append(html);
-            form.find('input[name="template-file"]').val('');
-            self.attr('disabled', false);
+                } else {
+                    igu.messageBox({message: 'Failed to upload template', type: 'error', timeout: 0});
+                    self.attr('disabled', false);
+                }
+            }
         };
 
         xhr.send(formdata);
@@ -161,3 +216,47 @@ function settings_init($) {
         $('button.upload-template').click(uploadTemplateHandler);
     }
 }
+
+var igu = (function($) {
+    var igu = {};
+
+    igu.messageBox = function(options) {
+        var classname = 'js-alertbox',
+            box;
+
+        function removeBox() {
+            box.remove();
+        }
+
+        if (!options.message) {
+            return;
+        }
+
+        if (options.type) {
+            switch(options.type.toLowerCase()) {
+            case 'error':
+            case 'success':
+            case 'warning':
+            case 'info':
+                classname += ' ' + options.type.toLowerCase();
+            }
+        }
+
+        box = $('<div/>', {'class': classname}).text(options.message);
+        if (options['class']) {
+            box.addClass(options['class']);
+        }
+
+        box.appendTo($('body'));
+
+        if (options.timeout !== 0) {
+            window.setTimeout(removeBox, options.timeout ? options.timeout : 3000);
+
+        } else {
+            box.append($('<img/>', {alt: 'Close dialog box', src: 'images/close.png'}))
+                .on('click.removeBox', 'img', removeBox);
+        }
+    }
+
+    return igu;
+})(jQuery);
