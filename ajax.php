@@ -40,6 +40,8 @@ require 'code/functions.php';
 require 'code/person.php';
 require 'code/SimpleImage.php';
 
+initSettingDefines();
+
 if (empty($_REQUEST['action'])) {
     header('HTTP/1.1 400 No action specified');
     exit;
@@ -114,6 +116,28 @@ case 'upload-photo':
         header('HTTP/1.1 500 Template upload failed');
         header('Content-Type: text/plain; charset=UTF-8');
         echo $e->getMessage();
+    }
+
+    break;
+
+case 'save-field-configuration':
+    if (empty($_POST['configuration'])) {
+        header('HTTP/1.1 400 Missing data');
+        break;
+    }
+
+    try {
+        $config = json_decode($_POST['configuration'], true);
+        if (!$config) {
+            throw new Exception('Could not decode configuration data');
+        }
+
+        saveFieldConfiguration(translateFrontendConfiguration($config));
+
+        header('HTTP/1.1 200 Saved');
+
+    } catch (Exception $e) {
+        header('HTTP/1.1 500 Failed');
     }
 
     break;

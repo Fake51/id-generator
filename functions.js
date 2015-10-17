@@ -52,8 +52,8 @@ function editor_init(jQuery) {
     }
 
     function setPhotoPosition(){
-        var x = 1024 + (jQuery('#x').val()*1) - 345,
-            y = 382 + (jQuery('#y').val()*1) - 445;
+        var x = jQuery('#x').val(),
+            y = jQuery('#y').val();
 
         jQuery('#photo').css({left: x + "px", top: y + "px"});
     }
@@ -115,23 +115,36 @@ function editor_init(jQuery) {
         $('button.upload-photo').click(uploadPhotoHandler);
     }
 
+    function movePhoto(axis, amount, e) {
+        e.stopPropagation();
+        e.preventDefault();
+
+        if (axis === 'x') {
+            setX(amount);
+        } else {
+            setY(amount);
+        }
+
+        return false;
+    }
+
     jQuery(function() {
         setPhotoPosition();
 
-        $('button.move-up').click(function() {
-            setY(-10);
+        $('button.move-up').click(function(e) {
+            return movePhoto('y', -10, e);
         });
 
-        $('button.move-down').click(function() {
-            setY(10);
+        $('button.move-down').click(function(e) {
+            return movePhoto('y', 10, e);
         });
 
-        $('button.move-left').click(function() {
-            setX(-10);
+        $('button.move-left').click(function(e) {
+            return movePhoto('x', -10, e);
         });
 
-        $('button.move-right').click(function() {
-            setX(10);
+        $('button.move-right').click(function(e) {
+            return movePhoto('x', 10, e);
         });
 
         $('button.next').click(next);
@@ -139,8 +152,41 @@ function editor_init(jQuery) {
     });
 }
 
-function settings_init($) {
+function settings_init($, canvas_settings) {
     "use strict";
+
+    var settings = {},
+        listeners = {
+            template_upload: [],
+            template_remove: []
+        },
+        canvas;
+
+    /**
+     * notifies potential event listeners about
+     * an event
+     *
+     * @param string event_name Name of event to publish
+     * @param object data       Data from publisher
+     *
+     * @return void
+     */
+    function notify(event_name, data) {
+        var callbacks;
+
+        if (listeners[event_name] && listeners[event_name].length) {
+            callbacks = listeners[event_name];
+            for (var index = callbacks.length; index; --index) {
+                if (typeof callbacks[index - 1] == 'function') {
+                    window.setTimeout((function(callback) {
+                        return function() {
+                            callback.call(null, data);
+                        };
+                    })(callbacks[index - 1]), 0);
+                }
+            }
+        }
+    }
 
     function removeTemplateHandler(e) {
         var self = $(this);
@@ -151,6 +197,8 @@ function settings_init($) {
                 type: "GET",
                 data: {filename: self.data('filename'), action: 'delete-template', ajax: true},
                 success: function() {
+                    notify('template_remove', {filename: self.data('filename'), name: self.parent().text()});
+
                     self.parent()
                         .fadeOut(300, function() {
                             self.remove();
@@ -175,7 +223,7 @@ function settings_init($) {
             form          = self.closest('form'),
             formdata      = new FormData(form[0]),
             xhr           = new XMLHttpRequest(),
-            html_template = $('#template-list-item').text();
+            html_template = $('#template-list-item').html();
 
         function appendNewTemplate() {
             var data = JSON.parse(xhr.responseText),
@@ -185,6 +233,8 @@ function settings_init($) {
             form.find('input[name="template-file"]').val('');
             self.attr('disabled', false);
             igu.messageBox({message: 'Template uploaded', type: 'success'});
+
+            notify('template_upload', {filename: data.filename, name: data.template});
         }
 
         e.preventDefault();
@@ -210,11 +260,167 @@ function settings_init($) {
         xhr.send(formdata);
     }
 
+    /**
+     * sets up the background image handling
+     * for the canvas editing
+     *
+     * @return void
+     */
+    function setupCanvasBackgroundHandling() {
+        var background_select = $('select.background'),
+            temp;
+
+        $('section.templates li').each(function() {
+            temp = $(this);
+
+            background_select.append('<option value="' + temp.find('img').data('filename') + '">' + temp.text() + '</option>');
+        });
+
+        background_select.on('change', function() {
+            settings.setCanvasBackground(canvas_settings.template_path + $(this).val());
+        });
+
+        if (background_select.val()) {
+            background_select.trigger('change');
+        }
+
+        listeners.template_upload.push(function(data) {
+            background_select.append('<option value="' + data.filename + '">' + data.name + '</option>');
+        });
+
+        listeners.template_remove.push(function(data) {
+            background_select.children().each(function() {
+                if (this.value == data.filename) {
+                    $(this).remove();
+                }
+            });
+
+            background_select.trigger('change');
+        });
+    }
+
+    /**
+     * saves the configuration of the photo and text boxes
+     *
+     * @param Event event Event triggered
+     *
+     * @return void
+     */
+    function saveFieldConfiguration(event) {
+        $.ajax({
+            url: 'ajax.php',
+            type: "POST",
+            data: {action: 'save-field-configuration', configuration: JSON.stringify(settings.getGroupConfiguration())},
+            success: function(data) {
+                igu.messageBox({message: 'Configuration saved', type: 'success'});
+            },
+            error: function(jqXHR) {
+                igu.messageBox({message: 'Failed to save configuration', type: 'error', timeout: 0});
+            }
+        });
+    }
+
+    /**
+     * sets up the canvas template editing
+     *
+     * @return void
+     */
+    function setupTemplateEditing() {
+        var boxes = canvas_settings.boxes,
+            groups = {},
+            rect,
+            text,
+            group;
+
+        /**
+         * returns data on current group configuration
+         *
+         * @return object
+         */
+        function getGroupConfiguration() {
+            var config = {},
+                state,
+                group;
+
+            for (var name in groups) {
+                if (groups.hasOwnProperty(name)) {
+                    group = groups[name];
+                    state = group.saveState();
+
+                    config[name] = {
+                        x:      state.left,
+                        y:      state.top,
+                        width:  state.currentWidth,
+                        height: state.currentHeight,
+                        angle:  state.angle
+                    };
+                }
+            }
+
+            return config;
+        }
+
+        canvas = new fabric.Canvas('template-container', {
+            backgroundColor: 'rgba(255, 255, 255, 1)'
+        });
+
+        for (var index = boxes.length; index; index--) {
+            // create a rectangle object
+            rect = new fabric.Rect({
+                fill: boxes[index - 1].color,
+                width: boxes[index - 1].width,
+                height: boxes[index - 1].height
+            });
+
+            text = new fabric.Text(boxes[index - 1].name, {
+                fontSize: 30,
+                fill: 'white'
+            });
+
+            group = new fabric.Group([text, rect], {
+                originX: 'left',
+                originY: 'top',
+                left: boxes[index - 1].offset_x,
+                top: boxes[index - 1].offset_y,
+                angle: boxes[index - 1].angle
+            });
+
+            // "add" rectangle onto canvas
+            canvas.add(group);
+            groups[boxes[index - 1].name] = group;
+
+            canvas.on('mouse:down', function(options) {
+                if (options.target) {
+                    options.target.bringToFront();
+                }
+            });
+        }
+
+        settings.setCanvasBackground = function(url) {
+            canvas.setBackgroundImage(url, function() {
+                canvas.renderAll();
+            });
+        };
+
+        settings.getGroupConfiguration = getGroupConfiguration;
+
+        setupCanvasBackgroundHandling();
+
+        $('button.save-field-configuration').click(saveFieldConfiguration);
+    }
+
     $('section.templates ul').on('click.remove-template', 'img.remove-template', removeTemplateHandler);
+    $('div.draggable').draggable({containment: 'parent'});
 
     if (window.FormData) {
         $('button.upload-template').click(uploadTemplateHandler);
     }
+
+    if (canvas_settings) {
+        setupTemplateEditing();
+    }
+
+    return settings;
 }
 
 var igu = (function($) {

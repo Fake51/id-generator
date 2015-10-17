@@ -37,6 +37,7 @@
  */
 
 define('BASE_PATH', realpath(__DIR__ . '/../'));
+define('VIEWS_PATH', BASE_PATH . "/views/");
 
 define('TEMPLATE_PATH', BASE_PATH . '/templates/');
 define('CACHE_PATH', BASE_PATH . '/cache/');
@@ -44,11 +45,29 @@ define('OUTPUT_PATH', BASE_PATH . '/output/');
 define('INPUT_PATH', BASE_PATH . '/persons/');
 define('FONTS_PATH', BASE_PATH . '/fonts/');
 define('CONFIG_PATH', BASE_PATH . "/config.json");
+define('SETTINGS_PATH', BASE_PATH . "/settings.json");
 
-define('VIEWS_PATH', BASE_PATH . "/views/");
+// web paths
+define('WEB_TEMPLATE_PATH', 'templates/');
 
-define('TEMPLATE_WIDTH', 1890);
-define('TEMPLATE_HEIGHT', 1180);
+// reasonable defaults
+define('TEMPLATE_DEFAULT_WIDTH', 1024);
+define('TEMPLATE_DEFAULT_HEIGHT', 639);
 
-define('PHOTO_WIDTH', 319);
-define('PHOTO_HEIGHT', 382);
+define('PHOTO_DEFAULT_WIDTH', 319);
+define('PHOTO_DEFAULT_HEIGHT', 382);
+define('PHOTO_DEFAULT_OFFSET_X', 100);
+define('PHOTO_DEFAULT_OFFSET_Y', 20);
+define('PHOTO_DEFAULT_ANGLE', 0);
+
+define('NAMEBOX_DEFAULT_WIDTH', round(TEMPLATE_DEFAULT_WIDTH / 4 * 3));
+define('NAMEBOX_DEFAULT_HEIGHT', 40);
+define('NAMEBOX_DEFAULT_OFFSET_X', 40);
+define('NAMEBOX_DEFAULT_OFFSET_Y', 500);
+define('NAMEBOX_DEFAULT_ANGLE', 90);
+
+define('FUNCTIONBOX_DEFAULT_WIDTH', round(TEMPLATE_DEFAULT_WIDTH / 4 * 1));
+define('FUNCTIONBOX_DEFAULT_HEIGHT', 100);
+define('FUNCTIONBOX_DEFAULT_OFFSET_X', 700);
+define('FUNCTIONBOX_DEFAULT_OFFSET_Y', 400);
+define('FUNCTIONBOX_DEFAULT_ANGLE', 0);

@@ -40,6 +40,8 @@ require 'code/functions.php';
 require 'code/person.php';
 require 'code/SimpleImage.php';
 
+initSettingDefines();
+
 if (!checkSetup()) {
     doInstall();
     header('HTTP/1.1 303 Install run');

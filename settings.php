@@ -41,6 +41,8 @@ require 'code/functions.php';
 require 'code/person.php';
 require 'code/SimpleImage.php';
 
+initSettingDefines();
+
 // get various needed values
 // handle post
 // show template

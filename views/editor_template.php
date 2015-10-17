@@ -42,6 +42,7 @@
     <meta charset="UTF-8">
     <link rel="stylesheet" href="style.css"/>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js"></script>
     <script>
         <?php
         if ($next_step!=null) : ?>
@@ -127,11 +128,12 @@
         <?php
         foreach($config['persons'] as $person){
             ?>
-            <li><a href='index.php?view=card&step=<?= urlencode($person['filename']); ?>'><?= e($person['filename']);?> / <?= e($person['navn']);?></a> &rarr; <a href="./output/idcard_<?= rawurlencode($person['filename']);?>.png" target="_blank">download</a></li>
+            <li><a href='index.php?view=card&step=<?= urlencode($person['filename']); ?>'><?= e($person['filename']);?> / <?= e($person['navn']);?> (<?= e(basename($person['template'], '.png'));?>)</a> &rarr; <a href="./output/idcard_<?= rawurlencode($person['filename']);?>.png" target="_blank">download</a></li>
             <?php
         }
         ?>
         </ul>
+        <p>I alt: <?= count($config['persons']);?></p>
         <p>
             <a href='index.php?view=zip'>Download</a> alle dem jeg har lavet og som er færdige (det er dem på listen lige ovenfor).
         </p>

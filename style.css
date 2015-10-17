@@ -61,9 +61,22 @@ input.color-input {
 }
 
 /* settings stuff */
-section.templates {
+section {
     background-color: #ddd;
     padding: 5px 10px;
+    border-bottom: 1px solid black;
+}
+
+section.field-setup {
+    padding: 5px 0;
+}
+
+section.field-setup header {
+    margin-left: 5px;
+}
+
+section header {
+    font-size: 2em;
 }
 
 img.remove-template {
@@ -119,3 +132,12 @@ div.js-alertbox.info {
     background-color: #00f;
     color: #fff;
 }
+
+section div.template-container {
+    position: relative;
+    background: #fff;
+    z-index: 0;
+    margin: 5px 0;
+    padding: 0;
+}
+
