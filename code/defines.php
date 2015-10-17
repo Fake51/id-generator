@@ -44,8 +44,8 @@ define('CACHE_PATH', BASE_PATH . '/cache/');
 define('OUTPUT_PATH', BASE_PATH . '/output/');
 define('INPUT_PATH', BASE_PATH . '/persons/');
 define('FONTS_PATH', BASE_PATH . '/fonts/');
-define('CONFIG_PATH', BASE_PATH . "/config.json");
-define('SETTINGS_PATH', BASE_PATH . "/settings.json");
+define('CONFIG_PATH', BASE_PATH . "/config/config.json");
+define('SETTINGS_PATH', BASE_PATH . "/config/settings.json");
 
 // web paths
 define('WEB_TEMPLATE_PATH', 'templates/');

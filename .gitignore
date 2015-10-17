@@ -5,7 +5,6 @@ output/*
 templates/*
 persons/*
 fonts/*
-config.json
 /vendor/
 bin
-settings.json
+config/*
