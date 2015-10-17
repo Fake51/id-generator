@@ -546,7 +546,7 @@ function createPersonImage($person, $filename, $debug, $image_type = IMAGETYPE_P
     $base_text_size = FUNCTIONBOX_HEIGHT * 1.6;
     $text_size      = $base_text_size / count($function_parts);
 
-    $modifier += $text_size / 5;
+    $modifier = $text_size / 5;
 
     if (count($function_parts) < 2) {
         $modifier += FUNCTIONBOX_HEIGHT;
@@ -584,13 +584,16 @@ function createPersonImage($person, $filename, $debug, $image_type = IMAGETYPE_P
         'layerbg'     => $layerbg,
         'offset_x'    => 514,
         'offset_y'    => 380,
+        'text_max_height' => 0,
         )
     );
 
     // DRAW BARCODE
     if ($person->getField('id')) {
         
-        $url = 'http://infosys.fastaval.dk/participant/ean8small/' . $person->getField('id');
+        // TODO get url from settings/config
+        $url = '';
+
         if (has_file_cache($url)){
             $barcode = get_file_cache($url);
             $barcode = $barcode->image;
@@ -674,8 +677,11 @@ function showIDCardEditor(array $data_fields, array $defaults)
 
     $step = !empty($_GET['step']) ? $_GET['step'] : 'first';
 
-    if ($step == "first") {
+    if ($step == "first" && $persons) {
         $step = $persons[0];
+
+    } else {
+        $step = '';
     }
 
     $person = new Person($step, $data_fields, $defaults);
@@ -685,6 +691,7 @@ function showIDCardEditor(array $data_fields, array $defaults)
     }
 
     $next_step = null;
+
     for ($i=0; $i<count($persons); $i++) {
         $navn = $persons[$i];
         $skip = false;
